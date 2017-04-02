@@ -22,7 +22,7 @@ aREST rest = aREST();
 WiFiServer server(LISTEN_PORT);
 
 //Status Variables   
-short prev_state;
+uint8_t prev_state;
 long last_msg = 0;
 
 //REST Variables
@@ -40,8 +40,11 @@ void setup() {
   init_android_ota();
 
   //Server 
+  rest.set_id("01");
+  rest.set_name("mailbox");
   rest.variable("tilt_state", &tilt_state);
   rest.variable("event_count", &event_count);
+
   server.begin();
   Serial.println("Server started");
   Serial.println(WiFi.localIP());
@@ -50,6 +53,7 @@ void setup() {
   pinMode(tiltPin, INPUT);
   pinMode(ledPin, OUTPUT);
   
+  WiFi.forceSleepBegin();
 }
 
 void loop() {
@@ -57,7 +61,6 @@ void loop() {
   //Wait for tilt status check
   long now = millis();
   if((now - last_msg) > tilt_wait){
-    
     tilt_state = !digitalRead(tiltPin);
     last_msg = millis();
 
@@ -89,7 +92,8 @@ void loop() {
   while(!client.available()){
     delay(1);
   }
+  
   rest.handle(client);
-
   ArduinoOTA.handle();
+  
 }
