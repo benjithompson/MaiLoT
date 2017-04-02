@@ -2,13 +2,10 @@
 //server over WiFi
 
 //Wifi/Server
-#include "ESP8266WiFi.h"
-#include <aREST.h>
+#include "wifi.h"
 
 //OTA
-#include <ESP8266mDNS.h>
-#include <WiFiUdp.h>
-#include <ArduinoOTA.h>
+#include "ota.h"
 
 //Convert
 #include "gpioconvert.h"
@@ -20,9 +17,6 @@
 const uint8_t tiltPin = d1;
 const uint8_t ledPin  = d7;  
 const uint8_t ledPin2 = d6;  
-
-const char* ssid = "NETGEAR21";
-const char* pw = "exoticchair828";
 
 aREST rest = aREST();
 WiFiServer server(LISTEN_PORT);
@@ -40,34 +34,10 @@ void setup() {
   Serial.begin(9600);
   
   //wifi
-  WiFi.begin(ssid, pw);
-  while(WiFi.status() != WL_CONNECTED){
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("Connected");
+  init_wifi();
 
   //ArduinoOTA 
-  ArduinoOTA.onStart([]() {
-    Serial.println("Start");
-  });
-  ArduinoOTA.onEnd([]() {
-    Serial.println("\nEnd");
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-    else if (error == OTA_END_ERROR) Serial.println("End Failed");
-  });
-  ArduinoOTA.begin();
-  Serial.println("OTA Ready");
+  init_android_ota();
 
   //Server 
   rest.variable("tilt_state", &tilt_state);
