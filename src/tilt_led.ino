@@ -18,8 +18,8 @@ const uint8_t tiltPin = d1;
 const uint8_t ledPin  = d7;  
 const uint8_t ledPin2 = d6;  
 
-aREST rest = aREST();
-WiFiServer server(LISTEN_PORT);
+// aREST rest = aREST();
+// WiFiServer server(LISTEN_PORT);
 
 //Status Variables   
 uint8_t prev_state;
@@ -37,27 +37,28 @@ void setup() {
   init_wifi();
 
   //ArduinoOTA 
-  init_android_ota();
+  // init_android_ota();
 
   //Server 
-  rest.set_id("01");
-  rest.set_name("mailbox");
-  rest.variable("tilt_state", &tilt_state);
-  rest.variable("event_count", &event_count);
+  // rest.set_id("01");
+  // rest.set_name("mailbox");
+  // rest.variable("tilt_state", &tilt_state);
+  // rest.variable("event_count", &event_count);
 
-  server.begin();
-  Serial.println("Server started");
-  Serial.println(WiFi.localIP());
+  // server.begin();
+  // Serial.println("Server started");
+  // Serial.println(WiFi.localIP());
   
   //Tilt
   pinMode(tiltPin, INPUT);
   pinMode(ledPin, OUTPUT);
   
-  WiFi.forceSleepBegin();
+  // WiFi.mode(WIFI_OFF);
+  
 }
 
 void loop() {
-
+  // WiFi.mode(WIFI_STA);
   //Wait for tilt status check
   long now = millis();
   if((now - last_msg) > tilt_wait){
@@ -66,6 +67,7 @@ void loop() {
 
     //check for new tilt status
     if (tilt_state != prev_state) {
+      POST(tilt_state);
 
       digitalWrite(ledPin, tilt_state);
       
@@ -85,15 +87,15 @@ void loop() {
   }
   
   //server
-  WiFiClient client = server.available();
-  if(!client){
-    return;
-  }
-  while(!client.available()){
-    delay(1);
-  }
+  // WiFiClient client = server.available();
+  // if(!client){
+  //   return;
+  // }
+  // while(!client.available()){
+  //   delay(1);
+  // }
   
-  rest.handle(client);
-  ArduinoOTA.handle();
+  // rest.handle(client);
+  // ArduinoOTA.handle();
   
 }
