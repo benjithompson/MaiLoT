@@ -15,9 +15,8 @@
 #define tilt_wait   500
 #define LISTEN_PORT  80
 
-const uint8_t tiltPin = d1;
-const uint8_t ledPin  = d7;  
-const uint8_t ledPin2 = d6;  
+const uint8_t tiltPin = d8;
+const uint8_t ledPin  = d7;   
 
 //Status Variables   
 uint8_t prev_state;
@@ -92,11 +91,7 @@ void loop() {
         client.publish(mqtt_topic, "Door Closed");
         Serial.println("Door Closed");
         client.disconnect();
-        ESP.deepSleep(3*1000000);
-      }
-
-      if((event_count % 2) == 0){
-        //digitalWrite(ledPin2
+        // ESP.deepSleep(3*1000000);
       }
 
       prev_state = tilt_state;
