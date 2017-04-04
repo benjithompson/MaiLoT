@@ -3,9 +3,10 @@
 
 //Wifi/Server
 #include "wifi.h"
+#include "PubSubclient.h"
 
 //OTA
-#include "ota.h"
+// #include "ota.h"
 
 //Convert
 #include "gpioconvert.h"
@@ -18,16 +19,19 @@ const uint8_t tiltPin = d1;
 const uint8_t ledPin  = d7;  
 const uint8_t ledPin2 = d6;  
 
-// aREST rest = aREST();
-// WiFiServer server(LISTEN_PORT);
-
 //Status Variables   
 uint8_t prev_state;
 long last_msg = 0;
 
 //REST Variables
 int tilt_state;
-int event_count = 0;
+
+const char* mqtt_server = "192.168.1.19";
+const char* mqtt_topic = "mailbox";
+const char* payload;
+
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 void setup() {
   
@@ -36,29 +40,32 @@ void setup() {
   //wifi
   init_wifi();
 
-  //ArduinoOTA 
-  // init_android_ota();
+  //MQTT Server
+  client.setServer(mqtt_server, 1883);
 
-  //Server 
-  // rest.set_id("01");
-  // rest.set_name("mailbox");
-  // rest.variable("tilt_state", &tilt_state);
-  // rest.variable("event_count", &event_count);
-
-  // server.begin();
-  // Serial.println("Server started");
-  // Serial.println(WiFi.localIP());
-  
   //Tilt
   pinMode(tiltPin, INPUT);
   pinMode(ledPin, OUTPUT);
   
-  // WiFi.mode(WIFI_OFF);
-  
+}
+
+void mqttConnect(){
+  while(!client.connected()){
+    Serial.println("Connecting MQTT");
+    Serial.print(".");
+
+    if(client.connect("ESP8266_Mailbox")){
+      Serial.println("MTQQ connected.");
+    }else{
+      Serial.print("Failed, clientstate=");
+      Serial.println(client.state());
+      delay(1000);
+    }
+  }
 }
 
 void loop() {
-  // WiFi.mode(WIFI_STA);
+
   //Wait for tilt status check
   long now = millis();
   if((now - last_msg) > tilt_wait){
@@ -67,35 +74,36 @@ void loop() {
 
     //check for new tilt status
     if (tilt_state != prev_state) {
-      POST(tilt_state);
 
+      //pubsub here
+      if(!client.connected()){
+          mqttConnect();
+      }
+    
+      //led
       digitalWrite(ledPin, tilt_state);
       
+      //Serial
       if(tilt_state){
+        client.publish(mqtt_topic, "Door Open");
         Serial.println("Door Open");
-        event_count++;
+        client.disconnect();
       }else{
+        client.publish(mqtt_topic, "Door Closed");
         Serial.println("Door Closed");
+        client.disconnect();
+        ESP.deepSleep(3*1000000);
       }
 
       if((event_count % 2) == 0){
         //digitalWrite(ledPin2
       }
+
       prev_state = tilt_state;
+
+      
     }
-    
+    // ESP.deepSleep(3*1000000);
   }
-  
-  //server
-  // WiFiClient client = server.available();
-  // if(!client){
-  //   return;
-  // }
-  // while(!client.available()){
-  //   delay(1);
-  // }
-  
-  // rest.handle(client);
   // ArduinoOTA.handle();
-  
 }
