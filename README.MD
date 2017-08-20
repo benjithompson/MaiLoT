@@ -23,7 +23,7 @@ Now when I point to the correct IP on a web browser I can see a JSON file of my 
 
 It seems the tilt function is working as tilt_state = 0 when the breadboard is flat on the table. Sweet. I also made the event counter only count when the tilt state changes to the 'tilted' position so that one event is counted as the door opening and closing, just like when the mailman comes by.
 
-#Problem
+# Problem
 
 Battery usage on the nodemcu is very high. Having a constant REST endpoint running over wifi will be very ineffecient. Instead I will be sending data directly to a raspberry pi server using thingboard.io as a server (open source, looks promising). ...
 
